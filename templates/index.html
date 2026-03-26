@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 종합 자산관리 대시보드</title>
+    <title>Jong의 포트폴리오 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,7 +12,7 @@
         body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .table-container { max-height: 350px; overflow-y: auto; }
+        .table-container { max-height: 380px; overflow-y: auto; }
         th { position: sticky; top: 0; background-color: #f1f5f9; z-index: 10; }
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
@@ -21,79 +21,89 @@
 <body class="h-screen w-full overflow-hidden flex text-slate-800">
 
     <aside class="w-1/4 bg-white border-r border-slate-200 p-6 flex flex-col h-full overflow-y-auto shadow-sm z-20">
-        <h2 class="text-lg font-bold mb-4">📅 일일 시황 리포트</h2>
-        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md mb-6">🚀 오늘자 분석 및 발송</button>
-        <div class="mb-6"><select class="w-full bg-slate-50 border p-2.5 rounded-lg text-sm"><option>2026-03-26 (목)</option></select></div>
-        <h3 class="font-bold text-slate-700 mb-3 border-b pb-2 text-sm">📊 주요 지표 마감</h3>
-        <div class="grid grid-cols-2 gap-2 mb-6">
-            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">다우지수</div><div class="font-bold">46,429</div><div class="text-xs font-bold text-red-600">▲ 0.66%</div></div>
-            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">S&P 500</div><div class="font-bold">6,592</div><div class="text-xs font-bold text-red-600">▲ 0.54%</div></div>
-            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">나스닥</div><div class="font-bold">21,930</div><div class="text-xs font-bold text-red-600">▲ 0.77%</div></div>
-            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">10년물 국채</div><div class="font-bold">4.328%</div><div class="text-xs font-bold text-blue-600">▼ -1.46%</div></div>
-            <div class="bg-slate-50 border p-2.5 rounded-lg col-span-2"><div class="text-xs text-slate-500">WTI 원유</div><div class="font-bold">$91.67</div><div class="text-xs font-bold text-blue-600">▼ -0.74%</div></div>
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📅 일일 시황 리포트</h2>
+        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md mb-6 transition-all">🚀 분석 리포트 발송</button>
+        
+        <h3 class="font-bold text-slate-700 mb-3 border-b pb-2 text-sm">📊 주요 지수 마감 (26일)</h3>
+        <div class="grid grid-cols-2 gap-2 mb-6 text-sm">
+            <div class="bg-slate-50 border p-2 rounded-lg"><div>다우</div><div class="font-bold">46,429</div><div class="text-xs text-red-600 font-bold">▲ 0.66%</div></div>
+            <div class="bg-slate-50 border p-2 rounded-lg"><div>S&P 500</div><div class="font-bold">6,592</div><div class="text-xs text-red-600 font-bold">▲ 0.54%</div></div>
+            <div class="bg-slate-50 border p-2 rounded-lg"><div>나스닥</div><div class="font-bold">21,930</div><div class="text-xs text-red-600 font-bold">▲ 0.77%</div></div>
+            <div class="bg-slate-50 border p-2 rounded-lg"><div>10년물 국채</div><div class="font-bold">4.328%</div><div class="text-xs text-blue-600 font-bold">▼ -1.46%</div></div>
+            <div class="bg-slate-50 border p-2 rounded-lg col-span-2"><div>WTI 원유</div><div class="font-bold">$91.67</div><div class="text-xs text-blue-600 font-bold">▼ -0.74%</div></div>
         </div>
+
         <div class="mb-6">
-            <h3 class="text-sm font-bold text-slate-700 mb-2">🤖 AI 시황 분석</h3>
-            <details class="group bg-blue-50 border border-blue-200 rounded-xl overflow-hidden cursor-pointer">
-                <summary class="p-4 text-sm font-medium flex justify-between"><span>시황 분석 보기</span><span>▼</span></summary>
-                <div class="p-4 border-t text-sm text-slate-600 bg-white">국채금리 하락으로 기술주 중심 반등이 있었습니다.</div>
+            <h3 class="text-sm font-bold text-slate-700 mb-2">🤖 AI 시황 분석 (Jong's Report)</h3>
+            <details class="group bg-blue-50 border border-blue-200 rounded-xl overflow-hidden cursor-pointer" open>
+                <summary class="p-4 text-sm font-medium flex justify-between bg-blue-100/50"><span>거시경제 분석 보기</span><span>▼</span></summary>
+                <div class="p-4 border-t text-xs text-slate-600 bg-white leading-relaxed space-y-2">
+                    <p>미 증시는 10년물 국채금리 하락으로 투자 심리가 안정되며 3대 지수 일제히 상승 마감했습니다.</p>
+                    <p><strong>전략:</strong> 금리 안정세가 지속될 경우 나스닥 비중이 높은 연금계좌의 성과 개선이 기대됩니다.</p>
+                </div>
             </details>
+        </div>
+
+        <div>
+            <h3 class="text-sm font-bold text-slate-700 mb-2">🌍 글로벌 핵심 뉴스</h3>
+            <div class="space-y-2">
+                <details class="group bg-slate-50 border rounded-lg text-xs"><summary class="p-2 cursor-pointer font-bold">버크셔 해서웨이의 AI 베팅</summary>
+                <div class="p-2 border-t text-slate-500">워런 버핏이 포트폴리오의 20.4%를 단 3개의 AI 주식에 집중하며 장기 가치를 높게 평가 중입니다.</div></details>
+                <details class="group bg-slate-50 border rounded-lg text-xs"><summary class="p-2 cursor-pointer font-bold">중동 지정학적 리스크</summary>
+                <div class="p-2 border-t text-slate-500">WTI 가격은 소폭 하락했으나 분쟁 확대 우려가 시장의 뇌관으로 작용하고 있습니다.</div></details>
+            </div>
         </div>
     </aside>
 
     <main class="w-3/4 h-full p-8 overflow-y-auto flex flex-col gap-6">
         <header class="flex justify-between items-end border-b pb-4">
-            <h1 class="text-2xl font-bold">📈 실시간 자산관리 대시보드</h1>
+            <h1 class="text-2xl font-bold text-slate-800">📈 Jong의 포트폴리오 대시보드</h1>
+            <span class="text-sm text-slate-500 font-medium">기준일: 2026-03-26</span>
         </header>
 
-        <section class="bg-blue-50/40 border border-blue-200 rounded-2xl p-5 flex items-start gap-4">
-            <div class="text-blue-500 text-2xl mt-1">💡</div>
-            <p class="text-slate-600 text-sm">메리츠금융지주가 강세를 보이며 포트폴리오 수익률을 견인하고 있습니다.</p>
+        <section class="bg-white border-l-4 border-blue-600 rounded-r-2xl p-5 shadow-sm space-y-2">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">🔍 시황 및 주요 종목 성과 요약</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+                국채금리 하락으로 시장이 안정된 가운데, <strong>메리츠금융지주(+3.05%)</strong>가 든든한 방어력을 보여주며 계좌 수익률을 견인했습니다. 반면 <strong>삼성전자(-4.44%)</strong>는 단기 변동성이 확대되었습니다. 전반적인 상승세 속에서도 금융주 강세가 반도체/완성차의 조정을 상쇄하며 포트폴리오 내 밸런스가 유지되고 있습니다.
+            </p>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm border p-6">
-            <h2 class="text-lg font-bold mb-4">💰 전체 포트폴리오 현황</h2>
+            <h2 class="text-lg font-bold mb-4">💰 전체 자산 현황</h2>
             <div class="flex flex-col xl:flex-row gap-6">
                 <div class="xl:w-2/3 table-container border rounded-xl">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 border-b">
-                            <tr><th class="px-4 py-3">계좌</th><th class="px-4 py-3">종목</th><th class="px-4 py-3 text-right">현재가</th><th class="px-4 py-3 text-right">수익률</th><th class="px-4 py-3 text-right">평가금액</th></tr>
-                        </thead>
-                        <tbody id="totalPortfolioTableBody" class="divide-y"></tbody>
-                    </table>
+                    <table class="w-full text-sm text-left"><thead class="bg-slate-50 border-b"><tr><th class="px-4 py-3">계좌</th><th class="px-4 py-3">종목</th><th class="px-4 py-3 text-right">수익률</th><th class="px-4 py-3 text-right">평가금액</th></tr></thead>
+                    <tbody id="totalPortfolioTableBody" class="divide-y"></tbody></table>
                 </div>
                 <div class="xl:w-1/3 bg-slate-50 rounded-xl p-4 border flex flex-col items-center">
-                    <div id="totalTreemapChart" class="w-full" style="min-height: 350px;"></div>
-                    <p class="text-xs text-slate-500 mt-2">박스크기: 비중 / 색상: 수익률</p>
+                    <div id="totalTreemapChart" class="w-full" style="min-height: 380px;"></div>
+                    <p class="text-xs text-slate-500 mt-2 font-bold text-red-600">빨강: 상승 / 파랑: 하락</p>
                 </div>
             </div>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm border p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">🔄 계좌별 리밸런싱 가이드</h2>
-                <select id="accountSelector" class="bg-slate-50 border p-2 rounded-lg font-bold outline-none"></select>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold">🔄 계좌별 리밸런싱 가이드</h2><select id="accountSelector" class="bg-slate-100 border p-2 rounded-lg font-bold"></select></div>
             <div class="flex flex-col xl:flex-row gap-6">
-                <div class="xl:w-1/2 border rounded-xl table-container">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 border-b">
-                            <tr><th class="px-4 py-3">종목명</th><th class="px-4 py-3 text-center">비중</th><th class="px-4 py-3 text-center">목표</th><th class="px-4 py-3 text-center">가이드</th></tr>
-                        </thead>
-                        <tbody id="accountPortfolioTableBody" class="divide-y"></tbody>
-                    </table>
-                </div>
-                <div class="xl:w-1/2 bg-slate-50 rounded-xl p-4 border">
-                    <div id="accountTreemapChart" class="w-full" style="min-height: 350px;"></div>
-                </div>
+                <div class="xl:w-1/2 border rounded-xl table-container"><table class="w-full text-sm text-left"><thead class="bg-slate-50 border-b"><tr><th class="px-4 py-3">종목명</th><th class="px-4 py-3 text-center">현재비중</th><th class="px-4 py-3 text-center">목표</th><th class="px-4 py-3 text-center">가이드</th></tr></thead>
+                <tbody id="accountPortfolioTableBody" class="divide-y"></tbody></table></div>
+                <div class="xl:w-1/2 bg-slate-50 rounded-xl p-4 border"><div id="accountTreemapChart" class="w-full" style="min-height: 350px;"></div></div>
+            </div>
+        </section>
+
+        <section class="bg-slate-800 text-white rounded-2xl p-6 shadow-md">
+            <h3 class="font-bold mb-3 flex items-center gap-2">🎯 계좌별 포트폴리오 대응 전략</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-300">
+                <div class="border-l-2 border-red-500 pl-3"><strong class="text-white">[종합/일반계좌]</strong> 메리츠금융지주 강세 지속 시 비중 축소 후 현대차2우B나 삼성전자 하락 구간 분할 매수로 밸런스 조정 권고.</div>
+                <div class="border-l-2 border-blue-500 pl-3"><strong class="text-white">[연금/IRP]</strong> 나스닥 안정화에 따라 ACE 미국빅테크TOP7 Plus 홀딩 유지. 삼성전자 하락폭 확대 시 장기 목표 비중(45%) 도달 여부 점검 필요.</div>
             </div>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm border p-6 mb-8">
-            <h2 class="text-lg font-bold mb-4">📊 성과 분석</h2>
+            <h2 class="text-lg font-bold mb-4">📊 포트폴리오 누적 성과</h2>
             <div class="grid grid-cols-2 gap-6">
-                <div class="border rounded-xl p-4 bg-slate-50/50"><div class="h-32"><canvas id="weeklyChart"></canvas></div></div>
-                <div class="border rounded-xl p-4 bg-slate-50/50"><div class="h-32"><canvas id="monthlyChart"></canvas></div></div>
+                <div class="border rounded-xl p-4 bg-slate-50/50"><h4 class="text-sm font-bold mb-2">주간 성과 (+1.24%)</h4><div class="h-32"><canvas id="weeklyChart"></canvas></div></div>
+                <div class="border rounded-xl p-4 bg-slate-50/50"><h4 class="text-sm font-bold mb-2">월간 성과 (+4.85%)</h4><div class="h-32"><canvas id="monthlyChart"></canvas></div></div>
             </div>
         </section>
     </main>
@@ -105,97 +115,78 @@
 
         const fmt = (n) => n.toLocaleString('ko-KR');
 
-        async function loadData() {
+        async function init() {
             try {
                 const res = await fetch('/api/portfolio');
                 globalData = await res.json();
-                
                 if (globalData.length > 0) {
                     renderTotalView(globalData);
-                    initSelector(globalData);
+                    const sel = document.getElementById('accountSelector');
+                    const accs = [...new Set(globalData.map(d => d.account))];
+                    sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
+                    sel.addEventListener('change', (e) => renderAccView(e.target.value));
+                    renderAccView(accs[0]);
+                    renderPerformance();
                 }
-            } catch (e) { console.error("Data Load Error:", e); }
+            } catch (e) { console.error("Load Error:", e); }
         }
 
         function renderTotalView(data) {
             const body = document.getElementById('totalPortfolioTableBody');
             body.innerHTML = data.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="px-4 py-3 text-xs text-slate-500">${item.account}</td>
-                    <td class="px-4 py-3 font-bold">${item.asset}</td>
-                    <td class="px-4 py-3 text-right">${fmt(item.currentPrice)}원</td>
-                    <td class="px-4 py-3 text-right font-bold ${item.return >= 0 ? 'text-red-600' : 'text-blue-600'}">${item.return}%</td>
-                    <td class="px-4 py-3 text-right">${fmt(item.value)}원</td>
-                </tr>
+                <tr class="hover:bg-slate-50"><td class="px-4 py-3 text-xs text-slate-500">${item.account}</td><td class="px-4 py-3 font-bold">${item.asset}</td><td class="px-4 py-3 text-right font-bold ${item.return >= 0 ? 'text-red-600' : 'text-blue-600'}">${item.return}%</td><td class="px-4 py-3 text-right">${fmt(item.value)}원</td></tr>
             `).join('');
 
             const series = data.filter(d => d.value > 0).map(d => ({ x: d.asset, y: d.value, val: d.return }));
             if(totalChart) totalChart.destroy();
-            totalChart = new ApexCharts(document.querySelector("#totalTreemapChart"), getMapOpt(series, "전체 자산"));
+            totalChart = new ApexCharts(document.querySelector("#totalTreemapChart"), getMapOpt(series, "전체 비중 및 수익률 히트맵"));
             totalChart.render();
-        }
-
-        function initSelector(data) {
-            const sel = document.getElementById('accountSelector');
-            const accs = [...new Set(data.map(d => d.account))];
-            sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
-            sel.addEventListener('change', (e) => renderAccView(e.target.value));
-            renderAccView(accs[0]);
         }
 
         function renderAccView(accName) {
             const filtered = globalData.filter(d => d.account === accName);
             const body = document.getElementById('accountPortfolioTableBody');
             body.innerHTML = filtered.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="px-4 py-4 font-bold">${item.asset}</td>
-                    <td class="px-4 py-4 text-center">${item.curWeight}%</td>
-                    <td class="px-4 py-4 text-center font-bold">${item.targetWeight}%</td>
-                    <td class="px-4 py-4 text-center">
-                        <span class="px-2 py-1 rounded-full text-xs font-bold ${item.guideType === 'buy' ? 'bg-red-100 text-red-600' : (item.guideType === 'sell' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500')}">
-                            ${item.guide}
-                        </span>
-                    </td>
-                </tr>
+                <tr class="hover:bg-slate-50"><td class="px-4 py-4 font-bold">${item.asset}</td><td class="px-4 py-4 text-center">${item.curWeight}%</td><td class="px-4 py-4 text-center font-bold">${item.targetWeight}%</td><td class="px-4 py-4 text-center"><span class="px-2 py-1 rounded-full text-xs font-bold ${item.guideType === 'buy' ? 'bg-red-100 text-red-600' : (item.guideType === 'sell' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500')}">${item.guide}</span></td></tr>
             `).join('');
 
             const series = filtered.filter(d => d.value > 0).map(d => ({ x: d.asset, y: d.value, val: d.return }));
             if(accChart) accChart.destroy();
-            accChart = new ApexCharts(document.querySelector("#accountTreemapChart"), getMapOpt(series, accName + " 현황"));
+            accChart = new ApexCharts(document.querySelector("#accountTreemapChart"), getMapOpt(series, accName + " 비중 현황"));
             accChart.render();
         }
 
         function getMapOpt(data, title) {
             return {
                 series: [{ data: data }],
-                chart: { type: 'treemap', height: 350, toolbar: { show: false } },
-                title: { text: title, align: 'center' },
+                chart: { type: 'treemap', height: 380, toolbar: { show: false } },
+                title: { text: title, align: 'center', style: { fontSize: '14px', fontWeight: 'bold' } },
                 plotOptions: {
                     treemap: {
                         enableShades: true,
                         colorScale: {
                             ranges: [
-                                { from: -100, to: -3, color: '#3b82f6' },
-                                { from: -3, to: 0.01, color: '#93c5fd' },
-                                { from: 0.01, to: 3, color: '#fca5a5' },
-                                { from: 3, to: 1000, color: '#ef4444' }
+                                { from: -100, to: -10, color: '#0047AB' },
+                                { from: -10, to: -2, color: '#4169E1' },
+                                { from: -2, to: 0, color: '#A3C1FF' },
+                                { from: 0.01, to: 2, color: '#FFBABA' },
+                                { from: 2, to: 10, color: '#FF4500' },
+                                { from: 10, to: 1000, color: '#D21404' }
                             ]
                         }
                     }
                 },
-                dataLabels: {
-                    enabled: true,
-                    formatter: (text, op) => [text, op.val + '%']
-                }
+                dataLabels: { enabled: true, formatter: (text, op) => [text, op.val + '%'] },
+                tooltip: { y: { formatter: (v) => fmt(v) + '원' } }
             };
         }
 
-        function initPerformance() {
+        function renderPerformance() {
             new Chart(document.getElementById('weeklyChart'), { type: 'bar', data: { labels: ['3주전', '2주전', '지난주', '이번주'], datasets: [{ data: [0.5, -0.2, 1.0, 1.24], backgroundColor: ['#cbd5e1', '#cbd5e1', '#cbd5e1', '#ef4444'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ data: [2.0, 3.8, 4.85], borderColor: '#ef4444', fill: true }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ data: [2.0, 3.8, 4.85], borderColor: '#ef4444', fill: true, tension: 0.4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
         }
 
-        window.onload = () => { loadData(); initPerformance(); };
+        window.onload = init;
     </script>
 </body>
 </html>
