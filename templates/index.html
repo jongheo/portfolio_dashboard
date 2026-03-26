@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시황 분석 및 자산관리 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .table-container { max-height: 300px; overflow-y: auto; }
+        th { position: sticky; top: 0; background-color: #f1f5f9; z-index: 10; }
+        
+        /* 아코디언(details) 애니메이션 부드럽게 */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="h-screen w-full overflow-hidden flex text-slate-800">
+
+    <aside class="w-1/4 bg-white border-r border-slate-200 p-6 flex flex-col h-full overflow-y-auto shadow-sm z-20">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📅 일일 시황 리포트</h2>
+
+        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors duration-200 flex justify-center items-center gap-2 mb-6">
+            <span>🚀 오늘자 분석 및 발송</span>
+        </button>
+
+        <div class="mb-6">
+            <select class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg focus:ring-blue-500 block p-2.5 outline-none cursor-pointer font-medium text-sm">
+                <option>2026-03-26 (목)</option>
+                <option>2026-03-25 (수)</option>
+            </select>
+        </div>
+
+        <h3 class="font-bold text-slate-700 mb-3 border-b pb-2 text-sm">📊 주요 지표 마감</h3>
+
+        <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">다우지수</div><div class="font-bold">46,429</div><div class="text-xs font-bold text-blue-600">▲ 0.66%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">S&P 500</div><div class="font-bold">6,592</div><div class="text-xs font-bold text-blue-600">▲ 0.54%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">나스닥</div><div class="font-bold">21,930</div><div class="text-xs font-bold text-blue-600">▲ 0.77%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">Russell 2000</div><div class="font-bold">2,350</div><div class="text-xs font-bold text-blue-600">▲ 1.12%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">10년물 국채</div><div class="font-bold">4.328%</div><div class="text-xs font-bold text-red-500">▼ -1.46%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg"><div class="text-xs text-slate-500">금 (Gold)</div><div class="font-bold">$2,180</div><div class="text-xs font-bold text-blue-600">▲ 0.45%</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-lg col-span-2"><div class="text-xs text-slate-500">WTI 원유</div><div class="font-bold">$91.67</div><div class="text-xs font-bold text-red-500">▼ -0.74%</div></div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-1">🤖 AI 시황 & 포트폴리오 분석</h3>
+            <details class="group bg-blue-50/50 border border-blue-200 rounded-xl overflow-hidden cursor-pointer">
+                <summary class="p-4 text-sm font-medium text-slate-700 hover:bg-blue-100/50 transition flex justify-between items-start">
+                    <span>미 3대 지수 일제히 상승. 국채 금리 하락이 시장 안정 견인...</span>
+                    <span class="text-blue-500 group-open:rotate-180 transition transform">▼</span>
+                </summary>
+                <div class="p-4 border-t border-blue-100 text-sm text-slate-600 bg-white leading-relaxed">
+                    <p class="mb-2"><strong class="text-blue-600">[거시경제 시황]</strong> 10년물 국채금리가 4.3% 초반으로 하락하며 빅테크 위주의 강세가 연출되었습니다.</p>
+                    <p class="mb-2"><strong class="text-blue-600">[포트폴리오 영향]</strong> 금리 하락 수혜로 연금저축1 계좌의 'ACE 미국빅테크TOP7'이 긍정적 지지를 받고 있으며, 메리츠금융지주가 +3% 이상 급등하여 종합계좌 방어에 크게 기여했습니다.</p>
+                    <p><strong class="text-blue-600">[대응 방안]</strong> 삼성전자 단기 조정 시 분할 매수로 비중 확대(45% 목표)를 권장합니다.</p>
+                </div>
+            </details>
+        </div>
+
+        <div>
+            <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-1">🌍 글로벌 핵심 뉴스</h3>
+            <div class="space-y-2">
+                <details class="group bg-slate-50 border border-slate-200 rounded-lg">
+                    <summary class="p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer flex justify-between items-center">
+                        <span class="truncate pr-2">버크셔 해서웨이, AI 주식에 20.4% 투자</span>
+                        <span class="text-slate-400 text-xs">▼</span>
+                    </summary>
+                    <div class="px-3 pb-3 text-xs text-slate-600 leading-relaxed border-t pt-2">워런 버핏의 버크셔 해서웨이가 포트폴리오의 3,060억 달러 중 약 20%를 애플 등 주요 AI 관련주에 집중하고 있다는 분석입니다. 가치투자 대가의 포트폴리오 변화가 시장의 이목을 끕니다.</div>
+                </details>
+                <details class="group bg-slate-50 border border-slate-200 rounded-lg">
+                    <summary class="p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer flex justify-between items-center">
+                        <span class="truncate pr-2">중동 분쟁 우려, WTI 유가 변동성 확대</span>
+                        <span class="text-slate-400 text-xs">▼</span>
+                    </summary>
+                    <div class="px-3 pb-3 text-xs text-slate-600 leading-relaxed border-t pt-2">중동 지역의 지정학적 리스크 확대로 인해 원유 공급 차질 우려가 제기되며 국제 유가의 변동성이 커지고 있습니다. 에너지 관련주 모니터링이 필요합니다.</div>
+                </details>
+            </div>
+        </div>
+    </aside>
+
+    <main class="w-3/4 h-full p-8 overflow-y-auto flex flex-col gap-6">
+        
+        <header class="flex justify-between items-end border-b border-slate-200 pb-4">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">📈 시황 분석 및 포트폴리오 대응전략</h1>
+            <span class="text-sm text-slate-500 font-medium">기준일: 2026-03-26</span>
+        </header>
+
+        <section class="bg-blue-50/40 border border-blue-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
+            <div class="text-blue-500 text-2xl mt-1">💡</div>
+            <div>
+                <h3 class="font-bold text-slate-800 text-base mb-1">어제 대비 계좌 및 특징 종목 브리핑</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">
+                    <strong>종합계좌</strong>는 <span class="text-blue-600 font-bold">메리츠금융지주(+3.05%)</span>의 강세에 힘입어 전일 대비 안정적인 흐름을 유지했습니다. 반면, <strong>삼성전자</strong>는 단기 변동성 확대로 <span class="text-red-500 font-bold">-4.44%</span> 조정을 받았습니다. 이는 목표 비중(45%)을 채우기 위한 <strong>저가 매수 기회</strong>로 활용할 수 있습니다.
+                </p>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">💰 전체 포트폴리오 현황</h2>
+            <div class="flex gap-8">
+                <div class="w-3/5 table-container border rounded-xl">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3">계좌명</th><th class="px-4 py-3">종목명</th><th class="px-4 py-3 text-right">매입단가</th><th class="px-4 py-3 text-right">현재가</th><th class="px-4 py-3 text-right">수익률</th><th class="px-4 py-3 text-right">평가금액</th>
+                            </tr>
+                        </thead>
+                        <tbody id="totalPortfolioTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div class="w-2/5 flex flex-col items-center justify-center bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <div class="w-full max-w-[240px] aspect-square relative"><canvas id="totalDonutChart"></canvas></div>
+                    <p class="text-xs text-slate-500 mt-4 text-center font-medium">전체 자산 종목별 비중</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">🔄 계좌별 맞춤 리밸런싱 가이드</h2>
+                <select id="accountSelector" class="bg-slate-50 border border-slate-300 text-sm rounded-lg p-2 font-bold cursor-pointer">
+                    <option value="종합계좌">종합계좌</option>
+                    <option value="일반계좌1">일반계좌1</option>
+                    <option value="연금저축1">연금저축1</option>
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <div class="w-1/2 border rounded-xl overflow-hidden">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                            <tr><th class="px-4 py-3">종목명</th><th class="px-4 py-3 text-center">현재비중</th><th class="px-4 py-3 text-center">목표비중</th><th class="px-4 py-3 text-center">액션 가이드</th></tr>
+                        </thead>
+                        <tbody id="accountPortfolioTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div class="w-1/2 flex flex-col items-center justify-center bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <div class="w-full max-w-[200px] aspect-square relative"><canvas id="accountDonutChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">📊 포트폴리오 누적 성과 분석</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="border rounded-xl p-5 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-700 text-sm mb-2">주간 누적 성과</h3>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-3xl font-bold text-blue-600">+1.24%</span>
+                        <span class="text-sm text-slate-500 mb-1">vs 지난주</span>
+                    </div>
+                    <div class="h-32 w-full"><canvas id="weeklyChart"></canvas></div>
+                </div>
+                <div class="border rounded-xl p-5 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-700 text-sm mb-2">월간 누적 성과</h3>
+                    <div class="flex items-end gap-2 mb-4">
+                        <span class="text-3xl font-bold text-blue-600">+4.85%</span>
+                        <span class="text-sm text-slate-500 mb-1">vs 지난달</span>
+                    </div>
+                    <div class="h-32 w-full"><canvas id="monthlyChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 전역 변수로 데이터 저장
+        let globalPortfolioData = [];
+        const formatNumber = (num) => num.toLocaleString('ko-KR');
+        let totalChartInstance = null, accountChartInstance = null;
+        const chartColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+
+        // Flask 백엔드 API에서 실시간 데이터 호출
+        async function fetchPortfolioData() {
+            try {
+                const response = await fetch('/api/portfolio');
+                globalPortfolioData = await response.json();
+                
+                // 데이터 로딩 완료 후 전체 포트폴리오 렌더링
+                renderTotalPortfolio(globalPortfolioData);
+                
+                // 드롭다운에 존재하는 계좌 목록 동적 생성
+                const selector = document.getElementById('accountSelector');
+                const accounts = [...new Set(globalPortfolioData.map(item => item.account))];
+                selector.innerHTML = accounts.map(acc => `<option value="${acc}">${acc}</option>`).join('');
+                
+                // 첫 번째 계좌 기준으로 하단 리밸런싱 영역 렌더링
+                if(accounts.length > 0) {
+                    renderAccountPortfolio(accounts[0], globalPortfolioData);
+                }
+            } catch (error) {
+                console.error("데이터 로드 실패:", error);
+            }
+        }
+
+        // 전체 포트폴리오 렌더링 (파라미터로 data 받도록 수정)
+        function renderTotalPortfolio(data) {
+            const tbody = document.getElementById('totalPortfolioTableBody');
+            tbody.innerHTML = '';
+            const labels = [], values = [];
+
+            data.forEach(item => {
+                const returnColor = item.return >= 0 ? 'text-blue-600' : 'text-red-500';
+                const returnSign = item.return > 0 ? '+' : '';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3 text-slate-600">${item.account}</td>
+                        <td class="px-4 py-3 font-bold text-slate-800">${item.asset}</td>
+                        <td class="px-4 py-3 text-right">${formatNumber(item.buyPrice)}원</td>
+                        <td class="px-4 py-3 text-right font-medium">${formatNumber(item.currentPrice)}원</td>
+                        <td class="px-4 py-3 text-right font-bold ${returnColor}">${returnSign}${item.return}%</td>
+                        <td class="px-4 py-3 text-right">${formatNumber(item.value)}원</td>
+                    </tr>
+                `;
+                labels.push(item.asset); values.push(item.value);
+            });
+
+            if(totalChartInstance) totalChartInstance.destroy();
+            totalChartInstance = new Chart(document.getElementById('totalDonutChart'), {
+                type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: chartColors, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        // 계좌별 포트폴리오 렌더링 (파라미터로 data 받도록 수정)
+        function renderAccountPortfolio(selectedAccount, data) {
+            const tbody = document.getElementById('accountPortfolioTableBody');
+            tbody.innerHTML = '';
+            const filteredData = data.filter(item => item.account === selectedAccount);
+            const labels = [], values = [];
+
+            filteredData.forEach(item => {
+                let badgeClass = item.guideType === 'buy' ? 'bg-emerald-100 text-emerald-700' : (item.guideType === 'sell' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600');
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-4 font-bold text-slate-800">${item.asset}</td>
+                        <td class="px-4 py-4 text-center">${item.curWeight}%</td>
+                        <td class="px-4 py-4 text-center font-bold">${item.targetWeight}%</td>
+                        <td class="px-4 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}">${item.guide}</span></td>
+                    </tr>
+                `;
+                labels.push(item.asset); values.push(item.curWeight);
+            });
+
+            if(accountChartInstance) accountChartInstance.destroy();
+            accountChartInstance = new Chart(document.getElementById('accountDonutChart'), {
+                type: 'doughnut', data: { labels, datasets: [{ data: values, backgroundColor: chartColors.slice(2), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } }
+            });
+        }
+
+        // 초기화
+        window.onload = () => {
+            fetchPortfolioData(); // 서버에서 데이터 가져오기 시작
+            // 주간/월간 차트는 기존 함수 재사용 (UI용)
+            if (typeof renderPerformanceCharts === "function") {
+                renderPerformanceCharts(); 
+            }
+            const selector = document.getElementById('accountSelector');
+            selector.addEventListener('change', (e) => renderAccountPortfolio(e.target.value, globalPortfolioData));
+        };
+    </script>
+</body>
+</html>
