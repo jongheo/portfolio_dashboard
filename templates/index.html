@@ -186,7 +186,35 @@
             new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ data: [2.0, 3.8, 4.85], borderColor: '#ef4444', fill: true, tension: 0.4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
         }
 
-        window.onload = init;
+        // 날짜별 리포트 연동 함수
+        async function fetchDailyReport(date) {
+            const res = await fetch(`/api/get_report/${date}`);
+            const report = await res.json();
+            if(report.date) {
+                // 사이드바 AI 분석 텍스트 교체
+                document.querySelector("details summary span").innerText = report.title;
+                document.querySelector("details div").innerHTML = `
+                    <p class="mb-2"><strong class="text-blue-600">[거시경제 시황]</strong> ${report.macro}</p>
+                    <p><strong class="text-blue-600">[대응 방안]</strong> ${report.strategy}</p>
+                `;
+            }
+        }
+
+        window.onload = async () => {
+            await init(); // 포트폴리오 데이터 로드
+            renderPerformanceCharts();
+
+            // Supabase에서 날짜 목록 가져오기
+            const res = await fetch('/api/get_report_dates');
+            const dates = await res.json();
+            const dateSel = document.querySelector("aside select");
+            
+            if(dates.length > 0) {
+                dateSel.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
+                dateSel.addEventListener('change', (e) => fetchDailyReport(e.target.value));
+                fetchDailyReport(dates[0]); // 첫날 리포트 로드
+            }
+        };
     </script>
 </body>
 </html>

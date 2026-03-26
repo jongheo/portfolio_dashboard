@@ -123,3 +123,53 @@ def get_portfolio():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
+from supabase import create_client, Client
+
+# Supabase 초기화 함수
+def get_supabase():
+    secrets = load_secrets()
+    return create_client(secrets["supabase"]["url"], secrets["supabase"]["key"])
+
+# 1. 저장된 모든 리포트 날짜 가져오기 (셀렉트 박스용)
+@app.route('/api/get_report_dates')
+def get_report_dates():
+    try:
+        supabase = get_supabase()
+        response = supabase.table("daily_reports").select("date").order("date", desc=True).execute()
+        return jsonify([item['date'] for item in response.data])
+    except Exception as e:
+        return jsonify([])
+
+# 2. 특정 날짜의 리포트 상세 데이터 가져오기
+@app.route('/api/get_report/<date>')
+def get_report(date):
+    try:
+        supabase = get_supabase()
+        response = supabase.table("daily_reports").select("*").eq("date", date).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        return jsonify({"status": "not_found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# 3. [테스트용] 오늘 작성하신 리포트 강제 저장 API
+# 브라우저에서 /api/save_sample_report 접속 시 오늘 리포트가 DB에 들어갑니다.
+@app.route('/api/save_sample_report')
+def save_sample_report():
+    try:
+        supabase = get_supabase()
+        sample_data = {
+            "date": "2026-03-26",
+            "title": "미 3대 지수 일제히 상승. 국채 금리 하락이 시장 안정 견인",
+            "macro": "10년물 국채금리가 4.3% 초반으로 하락하며 투자 심리가 안정되었습니다. 특히 나스닥이 0.77% 상승하며 기술주 중심의 강세가 연출되었습니다.",
+            "strategy": "메리츠금융지주 강세 지속 시 비중 축소 후 현대차2우B나 삼성전자 하락 구간 분할 매수 권고.",
+            "news": [
+                {"t": "버크셔 해서웨이의 AI 베팅", "c": "워런 버핏이 포트폴리오의 20.4%를 AI 주식에 집중하고 있습니다."},
+                {"t": "중동 지정학적 리스크", "c": "WTI 가격은 소폭 하락했으나 분쟁 우려가 여전합니다."}
+            ]
+        }
+        supabase.table("daily_reports").upsert(sample_data).execute()
+        return "오늘자 리포트가 Supabase DB에 성공적으로 저장되었습니다!"
+    except Exception as e:
+        return f"저장 실패: {str(e)}"
