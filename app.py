@@ -8,8 +8,18 @@ app = Flask(__name__)
 
 # secrets.toml 파일 읽기 (Streamlit에서 쓰던 방식을 Flask에서도 호환되게 사용)
 def load_secrets():
-    secrets_path = os.path.join(".streamlit", "secrets.toml")
-    return toml.load(secrets_path)
+    """로컬 및 클라우드(Render) 환경에 맞춰 보안 키 파일을 불러옵니다."""
+    # 1. Render 클라우드 서버가 파일을 저장하는 기본 경로
+    render_secret_path = "/etc/secrets/secrets.toml"
+    
+    # 2. 내 컴퓨터(로컬)에서 개발할 때 사용하는 경로
+    local_secret_path = os.path.join(".streamlit", "secrets.toml")
+    
+    # 클라우드 환경에 파일이 있으면 클라우드 경로를, 없으면 로컬 경로를 사용합니다.
+    if os.path.exists(render_secret_path):
+        return toml.load(render_secret_path)
+    else:
+        return toml.load(local_secret_path)
 
 def get_sheet_data():
     """구글 시트(자산관리시트_250301)에서 데이터를 읽어옵니다."""
