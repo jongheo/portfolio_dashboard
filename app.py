@@ -187,11 +187,17 @@ def get_gemini_analysis(portfolio_data):
 
     # [수정] 모델 이름을 공식 명칭인 'gemini-1.5-pro'로 변경합니다.
     # 만약 속도가 더 빠른 것을 원하시면 'gemini-1.5-flash'를 쓰셔도 충분히 똑똑합니다.
-    model_name = 'gemini-1.5-flash' 
+    model_name = 'models/gemini-3.1-pro-preview' 
     model = genai.GenerativeModel(model_name)
+
+    # 실시간성 주입을 위한 현재 시간 설정
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
     
     # Jong님의 스타일을 학습시킨 프롬프트
     prompt = f"""
+    [현재 시간: {now}]
+    당신은 Jong의 전담 AI 자산관리사입니다. 
+    제공된 최신 포트폴리오 데이터를 분석하여 '오늘'에 특화된 리포트를 작성하세요.
     당신은 전문 자산관리사입니다. 아래 포트폴리오 데이터를 바탕으로 오늘자 투자 리포트를 작성하세요.
     데이터: {json.dumps(portfolio_data, ensure_ascii=False)}
     
@@ -249,18 +255,6 @@ def generate_daily_report():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/api/check_models')
-def check_models():
-    try:
-        secrets = load_secrets()
-        genai.configure(api_key=secrets["gemini"]["api_key"])
-        models = []
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                models.append(m.name)
-        return jsonify({"available_models": models})
-    except Exception as e:
-        return jsonify({"error": str(e)})
 
 # [기존에 있던 서버 실행 코드]
 if __name__ == '__main__':
