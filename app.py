@@ -249,6 +249,19 @@ def generate_daily_report():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/api/check_models')
+def check_models():
+    try:
+        secrets = load_secrets()
+        genai.configure(api_key=secrets["gemini"]["api_key"])
+        models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                models.append(m.name)
+        return jsonify({"available_models": models})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 # [기존에 있던 서버 실행 코드]
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
