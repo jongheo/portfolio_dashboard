@@ -3,26 +3,19 @@ import gspread
 from google.oauth2.service_account import Credentials
 import toml
 import os
+import yfinance as yf # 실시간 주가 조회를 위한 라이브러리 추가
 
 app = Flask(__name__)
 
-# secrets.toml 파일 읽기 (Streamlit에서 쓰던 방식을 Flask에서도 호환되게 사용)
 def load_secrets():
-    """로컬 및 클라우드(Render) 환경에 맞춰 보안 키 파일을 불러옵니다."""
-    # 1. Render 클라우드 서버가 파일을 저장하는 기본 경로
     render_secret_path = "/etc/secrets/secrets.toml"
-    
-    # 2. 내 컴퓨터(로컬)에서 개발할 때 사용하는 경로
     local_secret_path = os.path.join(".streamlit", "secrets.toml")
-    
-    # 클라우드 환경에 파일이 있으면 클라우드 경로를, 없으면 로컬 경로를 사용합니다.
     if os.path.exists(render_secret_path):
         return toml.load(render_secret_path)
-    else:
-        return toml.load(local_secret_path)
+    return toml.load(local_secret_path)
 
 def get_sheet_data():
-    """구글 시트(자산관리시트_250301)에서 데이터를 읽어옵니다."""
+    """구글 시트에서 기초 데이터를 읽고, yfinance로 현재가를 가져와 모든 지표를 동적으로 계산합니다."""
     try:
         secrets = load_secrets()
         scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
@@ -32,30 +25,105 @@ def get_sheet_data():
         sheet = client.open("자산관리시트_250301").worksheet("잔고현황")
         records = sheet.get_all_records()
         
-        # 프론트엔드 JS 변수명에 맞게 데이터 키값 변환
-        formatted_data = []
+        portfolio = []
+        account_totals = {}
+        class_counts = {}
+
+        # 1. 실시간 현재가(yfinance) 조회 및 평가금액 계산
         for row in records:
-            formatted_data.append({
-                "account": row.get("계좌명", ""),
-                "asset": row.get("종목명", ""),
-                "buyPrice": row.get("매입단가", 0),
-                "currentPrice": row.get("현재가", 0),
-                "return": round(((row.get("현재가", 0) - row.get("매입단가", 0)) / row.get("매입단가", 1)) * 100, 2),
-                "value": row.get("평가금액", 0),
-                "curWeight": row.get("현재비중(%)", 0),
-                "targetWeight": row.get("목표비중(%)", 0),
-                "guide": row.get("가이드", "비중 유지"),
-                "guideType": "buy" if "확대" in row.get("가이드", "") else ("sell" if "실현" in row.get("가이드", "") else "hold")
+            acc = row.get("계좌명", "")
+            asset = row.get("종목명", "")
+            ticker = str(row.get("종목코드", ""))
+            asset_class = row.get("자산군", "성장")
+            buy_price = float(row.get("매입단가", 0))
+            qty = float(row.get("보유수량", 0))
+            
+            # 티커 오기재 자동 보정 안전장치
+            if ticker == "302480.KS": ticker = "309230.KS"
+
+            current_price = buy_price # 시세 조회가 안 될 경우를 대비한 기본값
+            
+            # yfinance를 통한 실시간 종가 조회
+            if ticker:
+                try:
+                    stock_data = yf.Ticker(ticker)
+                    hist = stock_data.history(period="1d")
+                    if not hist.empty:
+                        current_price = float(hist['Close'].iloc[-1])
+                except Exception as e:
+                    print(f"[{ticker}] 시세 조회 실패: {e}")
+
+            eval_amt = current_price * qty
+            account_totals[acc] = account_totals.get(acc, 0) + eval_amt
+            
+            # 계좌별/자산군별 종목 개수 카운트 (목표 비중 분할용)
+            if acc not in class_counts: class_counts[acc] = {}
+            class_counts[acc][asset_class] = class_counts[acc].get(asset_class, 0) + 1
+            
+            portfolio.append({
+                "account": acc, "asset": asset, "asset_class": asset_class,
+                "buyPrice": buy_price, "currentPrice": current_price,
+                "value": eval_amt,
+                "return": round(((current_price - buy_price) / buy_price) * 100, 2) if buy_price > 0 else 0
             })
+
+        # 2. 현재비중, 목표비중, 리밸런싱 가이드 자동 생성
+        formatted_data = []
+        
+        # 계좌별 자산군 목표 비중 매핑 (포트폴리오 설계 가이드 기준)
+        target_weight_map = {
+            "1.일반계좌1": {"성장": 50, "배당/가치": 30, "채권": 20},
+            "2.일반계좌2(해외)": {"성장": 70, "배당/가치": 30},
+            "3.종합계좌": {"성장": 50, "배당/가치": 50},
+            "4.ISA": {"성장": 100, "채권": 0},
+            "5.연금저축1": {"성장": 60, "배당/가치": 40},
+            "6.연금저축2": {"성장": 100},
+            "7.퇴직연금 DC": {"성장": 60, "채권": 40, "배당/가치": 0},
+            "8.IRP 1": {"성장": 100},
+            "9.IRP 2": {"성장": 100}
+        }
+
+        for p in portfolio:
+            acc = p["account"]
+            a_class = p["asset_class"]
+            total_val = account_totals.get(acc, 1)
+            
+            # 현재 비중(%) 계산
+            cur_weight = round((p["value"] / total_val) * 100, 1)
+            
+            # 목표 비중(%) 계산 (해당 자산군의 목표 비중을 종목 수만큼 1/N 배분)
+            class_target_weight = target_weight_map.get(acc, {}).get(a_class, 0)
+            asset_count = class_counts.get(acc, {}).get(a_class, 1)
+            target_weight = round(class_target_weight / asset_count, 1) if asset_count > 0 else 0
+            
+            # 가이드 액션 산출 (현재 비중과 목표 비중의 오차가 2% 이상 날 경우 알림)
+            diff = cur_weight - target_weight
+            if diff > 2.0:
+                guide, guide_type = "일부 실현", "sell"
+            elif diff < -2.0:
+                guide, guide_type = "비중 확대", "buy"
+            else:
+                guide, guide_type = "비중 유지", "hold"
+
+            formatted_data.append({
+                "account": acc,
+                "asset": p["asset"],
+                "buyPrice": p["buyPrice"],
+                "currentPrice": round(p["currentPrice"], 2),
+                "return": p["return"],
+                "value": round(p["value"], 0),
+                "curWeight": cur_weight,
+                "targetWeight": target_weight,
+                "guide": guide,
+                "guideType": guide_type
+            })
+            
         return formatted_data
+        
     except Exception as e:
-        print(f"구글 시트 연동 오류: {e}")
-        # 오류 시 기본 Fallback 데이터 제공 (티커 309230 반영)
-        return [
-            {"account": "종합계좌", "asset": "삼성전자", "buyPrice": 189000, "currentPrice": 180600, "return": -4.44, "value": 4200000, "curWeight": 42, "targetWeight": 45, "guide": "비중 확대", "guideType": "buy"},
-            {"account": "종합계좌", "asset": "메리츠금융지주", "buyPrice": 111400, "currentPrice": 114800, "return": 3.05, "value": 5800000, "curWeight": 58, "targetWeight": 55, "guide": "일부 실현", "guideType": "sell"},
-            {"account": "연금저축1", "asset": "ACE 미국빅테크TOP7 Plus (309230)", "buyPrice": 29500, "currentPrice": 29510, "return": 0.03, "value": 10000000, "curWeight": 100, "targetWeight": 100, "guide": "비중 유지", "guideType": "hold"}
-        ]
+        print(f"시스템 연동 오류: {e}")
+        return []
+
 
 @app.route('/')
 def home():
