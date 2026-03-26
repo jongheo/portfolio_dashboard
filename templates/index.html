@@ -215,6 +215,37 @@
                 fetchDailyReport(dates[0]); // 첫날 리포트 로드
             }
         };
+        // --- [기존 <script> 태그 안쪽 하단에 추가] ---
+
+        // 🚀 분석 리포트 발송 버튼 이벤트 연결
+        const reportBtn = document.querySelector("button"); // 사이드바의 파란색 버튼
+
+        if (reportBtn) {
+            reportBtn.addEventListener("click", async () => {
+                const originalText = reportBtn.innerHTML;
+                
+                // 버튼 비활성화 및 로딩 표시
+                reportBtn.disabled = true;
+                reportBtn.innerHTML = "<span>🤖 AI 분석 중...</span>";
+                
+                try {
+                    const res = await fetch('/api/generate_daily_report', { method: 'POST' });
+                    const result = await res.json();
+                    
+                    if (result.status === "success") {
+                        alert(`${result.date}자 AI 리포트가 생성되어 Supabase에 저장되었습니다!`);
+                        location.reload(); // 새로고침하여 리스트 갱신
+                    } else {
+                        alert("분석 실패: " + result.message);
+                    }
+                } catch (err) {
+                    alert("서버 통신 중 오류가 발생했습니다.");
+                } finally {
+                    reportBtn.disabled = false;
+                    reportBtn.innerHTML = originalText;
+                }
+            });
+        }
     </script>
 </body>
 </html>

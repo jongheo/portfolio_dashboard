@@ -173,3 +173,65 @@ def save_sample_report():
         return "오늘자 리포트가 Supabase DB에 성공적으로 저장되었습니다!"
     except Exception as e:
         return f"저장 실패: {str(e)}"
+    
+
+# --- [기존 함수들 아래에 추가] ---
+
+import google.generativeai as genai
+import json
+from datetime import datetime
+
+def get_gemini_analysis(portfolio_data):
+    secrets = load_secrets()
+    genai.configure(api_key=secrets["gemini"]["api_key"])
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    # Jong님의 스타일을 학습시킨 프롬프트
+    prompt = f"""
+    당신은 전문 자산관리사입니다. 아래 포트폴리오 데이터를 바탕으로 오늘자 투자 리포트를 작성하세요.
+    데이터: {json.dumps(portfolio_data, ensure_ascii=False)}
+    
+    [작성 규칙]
+    1. title: 시장 상황을 요약하는 한 줄 제목
+    2. macro: 10년물 국채금리, 지수 흐름을 포함한 거시경제 요약 (2~3문장)
+    3. strategy: 수익률이 좋거나 나쁜 종목(예: 삼성전자, 메리츠 등)을 언급하며 구체적인 계좌별 대응 전략 제시
+    4. news: 실제 글로벌 경제 뉴스를 참고하여 2가지 핵심 뉴스 생성 (객체 리스트 형태)
+    
+    반드시 아래 JSON 형식으로만 응답하세요:
+    {{
+        "title": "제목",
+        "macro": "내용",
+        "strategy": "내용",
+        "news": [
+            {{"t": "뉴스제목1", "c": "뉴스내용1"}},
+            {{"t": "뉴스제목2", "c": "뉴스내용2"}}
+        ]
+    }}
+    """
+    response = model.generate_content(prompt)
+    content = response.text.replace('```json', '').replace('```', '').strip()
+    return json.loads(content)
+
+@app.route('/api/generate_daily_report', methods=['POST'])
+def generate_daily_report():
+    try:
+        portfolio = get_sheet_data()
+        analysis = get_gemini_analysis(portfolio)
+        today = datetime.now().strftime("%Y-%m-%d")
+        supabase = get_supabase()
+        
+        report_data = {
+            "date": today,
+            "title": analysis['title'],
+            "macro": analysis['macro'],
+            "strategy": analysis['strategy'],
+            "news": analysis['news']
+        }
+        supabase.table("daily_reports").upsert(report_data).execute()
+        return jsonify({"status": "success", "date": today})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# [기존에 있던 서버 실행 코드]
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
