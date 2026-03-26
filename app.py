@@ -184,8 +184,9 @@ from datetime import datetime
 def get_gemini_analysis(portfolio_data):
     secrets = load_secrets()
     genai.configure(api_key=secrets["gemini"]["api_key"])
-    # 3.1 Pro 모델로 변경 (정확한 명칭: 'models/gemini-3.1-pro')
-    model = genai.GenerativeModel('models/gemini-3.1-pro')
+    # [수정] 모델 이름을 공식 명칭인 'gemini-1.5-pro'로 변경합니다.
+    # 만약 속도가 더 빠른 것을 원하시면 'gemini-1.5-flash'를 쓰셔도 충분히 똑똑합니다.
+    model = genai.GenerativeModel('gemini-1.5-pro')
     
     # Jong님의 스타일을 학습시킨 프롬프트
     prompt = f"""
