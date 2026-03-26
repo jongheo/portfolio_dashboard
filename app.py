@@ -184,7 +184,8 @@ from datetime import datetime
 def get_gemini_analysis(portfolio_data):
     secrets = load_secrets()
     genai.configure(api_key=secrets["gemini"]["api_key"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # 3.1 Pro 모델로 변경 (정확한 명칭: 'models/gemini-3.1-pro')
+    model = genai.GenerativeModel('models/gemini-3.1-pro')
     
     # Jong님의 스타일을 학습시킨 프롬프트
     prompt = f"""
@@ -208,10 +209,23 @@ def get_gemini_analysis(portfolio_data):
         ]
     }}
     """
-    response = model.generate_content(prompt)
-    content = response.text.replace('```json', '').replace('```', '').strip()
-    return json.loads(content)
-
+    # 1. 응답 설정을 JSON 모드로 고정하여 요청
+    response = model.generate_content(
+        prompt,
+        generation_config={"response_mime_type": "application/json"}
+    )
+    
+    # 2. AI가 준 텍스트를 바로 파이썬 데이터(JSON)로 변환
+    try:
+        # JSON 모드에서는 앞뒤에 ```json 같은 표시가 붙지 않고 순수 데이터만 옵니다.
+        return json.loads(response.text.strip())
+    except Exception as e:
+        # 만약의 경우를 대비해 에러 발생 시 로그를 남깁니다.
+        print(f"AI 응답 파싱 실패: {response.text}")
+        # 기존 방식처럼 마크다운 기호를 한 번 더 체크하는 안전장치
+        content = response.text.replace('```json', '').replace('```', '').strip()
+        return json.loads(content)
+    
 @app.route('/api/generate_daily_report', methods=['POST'])
 def generate_daily_report():
     try:
