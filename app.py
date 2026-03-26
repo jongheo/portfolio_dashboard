@@ -187,7 +187,7 @@ def get_gemini_analysis(portfolio_data):
 
     # [수정] 모델 이름을 공식 명칭인 'gemini-1.5-pro'로 변경합니다.
     # 만약 속도가 더 빠른 것을 원하시면 'gemini-1.5-flash'를 쓰셔도 충분히 똑똑합니다.
-    model_name = 'models/gemini-pro-latest' 
+    model_name = 'models/gemini-2.0-flash-lite' 
     model = genai.GenerativeModel(model_name)
 
     # 실시간성 주입을 위한 현재 시간 설정
