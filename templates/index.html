@@ -12,16 +12,17 @@
         .table-container { max-height: 400px; overflow-y: auto; }
         th { position: sticky; top: 0; background-color: #f1f5f9; z-index: 10; font-size: 11px; padding: 12px 8px; }
         details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
     </style>
 </head>
 <body class="h-screen w-full overflow-hidden flex text-slate-800">
 
     <aside class="w-1/4 bg-white border-r p-6 flex flex-col h-full overflow-y-auto shadow-sm">
         <h2 class="text-xl font-bold mb-4">📅 일일 시황 리포트</h2>
-        <button id="reportBtn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl mb-6 hover:bg-blue-700 transition-all">🚀 분석 리포트 발송</button>
+        <button id="reportBtn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl mb-6 hover:bg-blue-700 transition-all active:scale-95">🚀 분석 리포트 발송</button>
         
         <div class="mb-6">
-            <label class="text-xs font-bold text-slate-400 mb-1 block tracking-tighter text-[10px]">과거 리포트 조회</label>
+            <label class="text-xs font-bold text-slate-400 mb-1 block">과거 리포트 조회</label>
             <select id="dateSelector" class="w-full bg-slate-50 border p-2.5 rounded-lg text-sm font-bold outline-none"></select>
         </div>
         
@@ -31,32 +32,34 @@
             <div class="bg-slate-50 border p-2.5 rounded-xl"><div>S&P 500</div><div id="m-snp" class="font-bold text-blue-600">--</div></div>
             <div class="bg-slate-50 border p-2.5 rounded-xl"><div>나스닥</div><div id="m-nasdaq" class="font-bold text-blue-600">--</div></div>
             <div class="bg-slate-50 border p-2.5 rounded-xl"><div>Russell 2000</div><div id="m-russell" class="font-bold text-blue-600">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>10년물 금리</div><div id="m-us10y" class="font-bold text-blue-600">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>WTI 유가</div><div id="m-wti" class="font-bold text-blue-600">--</div></div>
             <div class="bg-slate-50 border p-2.5 rounded-xl"><div>금(Gold)</div><div id="m-gold" class="font-bold text-orange-600">--</div></div>
             <div class="bg-slate-50 border p-2.5 rounded-xl"><div>원달러 환율</div><div id="m-usd" class="font-bold text-green-600">--</div></div>
         </div>
 
         <h3 class="text-xs font-bold text-slate-700 mb-2">🤖 AI 시황 분석</h3>
-        <div id="ai-side-content" class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-[11px] mb-6 leading-relaxed">데이터 분석 대기 중...</div>
+        <div id="ai-side-content" class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-[11px] mb-6 leading-relaxed">리포트를 선택하거나 분석 버튼을 눌러주세요.</div>
 
-        <h3 class="text-xs font-bold text-slate-700 mb-2 font-bold">🌍 글로벌 핵심 뉴스</h3>
+        <h3 class="text-xs font-bold text-slate-700 mb-2">🌍 글로벌 핵심 뉴스</h3>
         <div id="news-container" class="space-y-2"></div>
     </aside>
 
     <main class="w-3/4 h-full p-8 overflow-y-auto flex flex-col gap-8">
         <header class="flex justify-between items-end border-b pb-5">
             <h1 class="text-2xl font-black tracking-tight">📈 Jong의 포트폴리오 대시보드</h1>
-            <span id="base-date" class="text-sm text-slate-500 font-bold bg-white px-3 py-1 border rounded-full">기준일: --</span>
+            <span id="base-date" class="text-sm text-slate-500 font-bold bg-white px-3 py-1 border rounded-full shadow-sm">기준일: --</span>
         </header>
 
-        <section class="bg-white border-l-4 border-blue-600 p-5 shadow-sm rounded-r-2xl">
+        <section class="bg-white border-l-4 border-blue-600 p-6 shadow-sm rounded-r-2xl">
             <h3 class="font-bold text-sm mb-2 text-blue-600">🔍 시황 기반 포트폴리오 영향 및 성과 분석</h3>
-            <p id="macro-impact" class="text-sm text-slate-600 leading-relaxed italic">리포트를 선택하여 상세 분석을 확인하세요.</p>
+            <p id="macro-impact" class="text-sm text-slate-600 leading-relaxed font-medium italic">리포트 데이터를 불러오는 중입니다...</p>
         </section>
 
-        <section class="bg-white rounded-3xl shadow-sm border p-6">
-            <h2 class="text-lg font-bold mb-4 font-bold">💰 전체 자산 현황</h2>
-            <div class="flex gap-6">
-                <div class="w-2/3 table-container border rounded-2xl overflow-hidden">
+        <section class="bg-white rounded-3xl shadow-sm border p-7">
+            <h2 class="text-lg font-bold mb-5">💰 전체 자산 현황</h2>
+            <div class="flex flex-col xl:flex-row gap-8">
+                <div class="xl:w-2/3 table-container border rounded-2xl overflow-hidden">
                     <table class="w-full text-[11px] text-left">
                         <thead class="bg-slate-50 border-b">
                             <tr><th>계좌</th><th>종목</th><th class="text-right">수량</th><th class="text-right">매입가</th><th class="text-right">현재가</th><th class="text-right">수익률</th><th class="text-right">평가금액</th></tr>
@@ -64,17 +67,17 @@
                         <tbody id="totalTableBody" class="divide-y"></tbody>
                     </table>
                 </div>
-                <div id="totalTreemap" class="w-1/3 h-[380px] bg-slate-50 rounded-2xl border"></div>
+                <div id="totalTreemap" class="xl:w-1/3 h-[380px] bg-slate-50 rounded-2xl border"></div>
             </div>
         </section>
 
-        <section class="bg-white rounded-3xl shadow-sm border p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold font-bold">🔄 계좌별 리밸런싱 가이드</h2>
-                <select id="accSelector" class="bg-slate-100 border p-2 rounded-lg text-sm font-bold"></select>
+        <section class="bg-white rounded-3xl shadow-sm border p-7">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold">🔄 계좌별 리밸런싱 가이드</h2>
+                <select id="accSelector" class="bg-slate-50 border p-2.5 rounded-xl font-bold text-sm outline-none"></select>
             </div>
-            <div class="flex gap-6">
-                <div class="w-2/3 table-container border rounded-2xl overflow-hidden">
+            <div class="flex flex-col xl:flex-row gap-8">
+                <div class="xl:w-2/3 table-container border rounded-2xl overflow-hidden">
                     <table class="w-full text-[11px] text-left">
                         <thead class="bg-slate-50 border-b">
                             <tr><th>종목명</th><th class="text-right">수량</th><th class="text-right">매입가</th><th class="text-right">현재가</th><th class="text-center">비중/목표</th><th class="text-center">리밸런싱 가이드</th></tr>
@@ -82,20 +85,26 @@
                         <tbody id="accTableBody" class="divide-y"></tbody>
                     </table>
                 </div>
-                <div id="accTreemap" class="w-1/3 h-[380px] bg-slate-50 rounded-2xl border"></div>
+                <div id="accTreemap" class="xl:w-1/3 h-[380px] bg-slate-50 rounded-2xl border"></div>
             </div>
         </section>
 
-        <section class="bg-slate-900 text-white rounded-3xl p-7 shadow-xl">
-            <h3 class="font-bold mb-3 text-blue-400 font-bold">🎯 계좌별 포트폴리오 대응 전략</h3>
-            <p id="strategy-text" class="text-sm font-light text-slate-300 leading-relaxed"></p>
+        <section class="bg-slate-900 text-white rounded-3xl p-8 shadow-xl">
+            <h3 class="font-bold mb-4 text-blue-400">🎯 계좌별 포트폴리오 대응 전략</h3>
+            <p id="strategy-text" class="text-sm font-light text-slate-300 leading-relaxed">분석 데이터가 없습니다.</p>
         </section>
 
-        <section class="bg-white rounded-3xl border p-6 mb-10">
-            <h2 class="text-lg font-bold mb-4 font-bold">📊 포트폴리오 누적 성과</h2>
-            <div class="grid grid-cols-2 gap-8 h-52">
-                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center"><canvas id="weeklyChart"></canvas></div>
-                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center"><canvas id="monthlyChart"></canvas></div>
+        <section class="bg-white rounded-3xl border p-7 mb-10">
+            <h2 class="text-lg font-bold mb-6">📊 포트폴리오 누적 성과</h2>
+            <div class="grid grid-cols-2 gap-8 h-56">
+                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center">
+                    <span class="text-xs font-bold text-slate-400 mb-2">주간 수익률 추이</span>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center">
+                    <span class="text-xs font-bold text-slate-400 mb-2">월간 자산 추이</span>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
             </div>
         </section>
     </main>
@@ -106,56 +115,72 @@
         const fmt = (n) => Number(n).toLocaleString();
 
         async function init() {
-            // 1. 실시간 시트 데이터 로드
-            const res = await fetch('/api/portfolio');
-            const data = await res.json();
-            if(data.market) updateMarketUI(data.market);
-            globalData = data.portfolio;
-            renderTotal(globalData);
-            
-            // 2. 계좌 선택기 설정
-            const accs = [...new Set(globalData.map(d => d.account))];
-            const sel = document.getElementById('accSelector');
-            sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
-            sel.onchange = (e) => renderAcc(e.target.value);
-            renderAcc(accs[0]);
+            try {
+                // 1. 시트 데이터 로드
+                const res = await fetch('/api/portfolio');
+                const data = await res.json();
+                
+                if(data && data.market) updateMarketUI(data.market);
+                if(data && data.portfolio) {
+                    globalData = data.portfolio;
+                    renderTotal(globalData);
+                    
+                    const accs = [...new Set(globalData.map(d => d.account))];
+                    const sel = document.getElementById('accSelector');
+                    sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
+                    sel.onchange = (e) => renderAcc(e.target.value);
+                    renderAcc(accs[0]);
+                }
 
-            // 3. 리포트 날짜 목록 로드
-            const dRes = await fetch('/api/get_report_dates');
-            const dates = await dRes.json();
-            const dSel = document.getElementById('dateSelector');
-            dSel.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-            dSel.onchange = (e) => loadReport(e.target.value);
-            if(dates.length > 0) loadReport(dates[0]);
+                // 2. 리포트 날짜 목록 로드
+                const dRes = await fetch('/api/get_report_dates');
+                const dates = await dRes.json();
+                const dSel = document.getElementById('dateSelector');
+                
+                if(dates && dates.length > 0) {
+                    dSel.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
+                    dSel.onchange = (e) => loadReport(e.target.value);
+                    loadReport(dates[0]); // 최신 리포트 로드
+                } else {
+                    document.getElementById('macro-impact').innerText = "생성된 리포트가 없습니다. 분석 버튼을 눌러주세요.";
+                }
 
-            renderCharts();
+                renderCharts();
+            } catch (e) { console.error("Initialization Error:", e); }
         }
 
         function updateMarketUI(m) {
-            document.getElementById('m-dow').innerText = m.dow;
-            document.getElementById('m-snp').innerText = m.snp;
-            document.getElementById('m-nasdaq').innerText = m.nasdaq;
-            document.getElementById('m-russell').innerText = m.russell;
-            document.getElementById('m-gold').innerText = m.gold;
-            document.getElementById('m-usd').innerText = m.usd;
-            document.getElementById('base-date').innerText = "기준일: " + m.date;
+            document.getElementById('m-dow').innerText = m.dow || "--";
+            document.getElementById('m-snp').innerText = m.snp || "--";
+            document.getElementById('m-nasdaq').innerText = m.nasdaq || "--";
+            document.getElementById('m-russell').innerText = m.russell || "--";
+            document.getElementById('m-us10y').innerText = m.us10y || "--";
+            document.getElementById('m-wti').innerText = m.wti || "--";
+            document.getElementById('m-gold').innerText = m.gold || "--";
+            document.getElementById('m-usd').innerText = m.usd || "--";
+            document.getElementById('base-date').innerText = "기준일: " + (m.date || "--");
         }
 
         async function loadReport(date) {
-            const res = await fetch('/api/get_report/' + date);
-            const r = await res.json();
-            if(r.title) {
-                document.getElementById('ai-side-content').innerHTML = `<strong>${r.title}</strong><br><br>${r.macro}`;
-                document.getElementById('macro-impact').innerText = r.macro;
-                document.getElementById('strategy-text').innerText = r.strategy;
-                if(r.dow) updateMarketUI(r); // 과거 리포트 조회 시 당시 지수 복구
-                document.getElementById('news-container').innerHTML = r.news.map(n => `
-                    <details class="bg-slate-50 border border-slate-100 rounded-xl text-[11px] hover:bg-slate-100 transition-all">
-                        <summary class="p-3 font-bold flex justify-between cursor-pointer">${n.t} <span>▼</span></summary>
-                        <div class="p-3 border-t bg-white leading-relaxed text-slate-500">${n.c}</div>
-                    </details>
-                `).join('');
-            }
+            try {
+                const res = await fetch('/api/get_report/' + date);
+                const r = await res.json();
+                if(r && r.title) {
+                    document.getElementById('ai-side-content').innerHTML = `<strong>${r.title}</strong><br><br>${r.macro}`;
+                    document.getElementById('macro-impact').innerText = r.macro;
+                    document.getElementById('strategy-text').innerText = r.strategy;
+                    
+                    // 과거 조회 시 당시 지표도 복구
+                    if(r.dow) updateMarketUI(r);
+
+                    document.getElementById('news-container').innerHTML = (r.news || []).map(n => `
+                        <details class="bg-slate-50 border border-slate-100 rounded-xl text-[11px] hover:bg-slate-100 transition-all">
+                            <summary class="p-3 font-bold flex justify-between cursor-pointer">${n.t} <span>▼</span></summary>
+                            <div class="p-3 border-t bg-white leading-relaxed text-slate-500">${n.c}</div>
+                        </details>
+                    `).join('');
+                }
+            } catch (e) { console.error("Report Load Error:", e); }
         }
 
         function renderTotal(data) {
@@ -185,7 +210,7 @@
                     <td class="px-3 py-4 text-right text-slate-300">${fmt(d.buyPrice)}</td>
                     <td class="px-3 py-4 text-right">${fmt(d.currentPrice)}</td>
                     <td class="px-3 py-4 text-center font-bold text-blue-600">${((d.value/totalVal)*100).toFixed(1)}% <span class="text-slate-300 font-normal">/ -</span></td>
-                    <td class="px-3 py-4 text-center"><span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">관망</span></td>
+                    <td class="px-3 py-4 text-center"><span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">비중 유지</span></td>
                 </tr>
             `).join('');
             if(accChart) accChart.destroy();
@@ -208,13 +233,16 @@
         document.getElementById('reportBtn').onclick = async () => {
             const btn = document.getElementById('reportBtn');
             btn.innerText = "🤖 분석 중..."; btn.disabled = true;
-            await fetch('/api/generate_daily_report', { method: 'POST' });
-            location.reload();
+            try {
+                const res = await fetch('/api/generate_daily_report', { method: 'POST' });
+                if(res.ok) location.reload();
+                else alert("Quota 초과 또는 서버 오류입니다. 내일 다시 시도해주세요.");
+            } catch(e) { console.error(e); btn.innerText = "🚀 분석 리포트 발송"; btn.disabled = false; }
         }
 
         function renderCharts() {
-            new Chart(document.getElementById('weeklyChart'), { type: 'bar', data: { labels: ['3주전', '2주전', '1주전', '현재'], datasets: [{ label: '수익률(%)', data: [1.5, -0.8, 2.3, 1.2], backgroundColor: '#3b82f6' }] }, options: { maintainAspectRatio: false } });
-            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ label: '자산 총액', data: [420, 460, 510], borderColor: '#ef4444', tension: 0.4 }] }, options: { maintainAspectRatio: false } });
+            new Chart(document.getElementById('weeklyChart'), { type: 'bar', data: { labels: ['3주전', '2주전', '1주전', '현재'], datasets: [{ label: '수익률(%)', data: [1.5, -0.8, 2.3, 1.2], backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { maintainAspectRatio: false } });
+            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ label: '자산 총액', data: [420, 460, 510], borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: 'rgba(239, 68, 68, 0.05)' }] }, options: { maintainAspectRatio: false } });
         }
 
         window.onload = init;
