@@ -2,250 +2,263 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jong의 포트폴리오 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .table-container { max-height: 380px; overflow-y: auto; }
-        th { position: sticky; top: 0; background-color: #f1f5f9; z-index: 10; }
-        details > summary { list-style: none; }
+        .table-container { max-height: 420px; overflow-y: auto; }
+        th { position: sticky; top: 0; background-color: #f1f5f9; z-index: 10; font-size: 11px; white-space: nowrap; }
+        details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
     </style>
 </head>
 <body class="h-screen w-full overflow-hidden flex text-slate-800">
 
-    <aside class="w-1/4 bg-white border-r border-slate-200 p-6 flex flex-col h-full overflow-y-auto shadow-sm z-20">
-        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">📅 일일 시황 리포트</h2>
-        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md mb-6 transition-all">🚀 분석 리포트 발송</button>
+    <aside class="w-1/4 bg-white border-r p-6 flex flex-col h-full overflow-y-auto shadow-sm">
+        <h2 class="text-xl font-bold mb-5 flex items-center gap-2">📅 시황 리포트</h2>
+        <button id="reportBtn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg mb-6 hover:bg-blue-700 transition-all active:scale-95">🚀 분석 리포트 발송</button>
         
-        <h3 class="font-bold text-slate-700 mb-3 border-b pb-2 text-sm">📊 주요 지수 마감 (26일)</h3>
-        <div class="grid grid-cols-2 gap-2 mb-6 text-sm">
-            <div class="bg-slate-50 border p-2 rounded-lg"><div>다우</div><div class="font-bold">46,429</div><div class="text-xs text-red-600 font-bold">▲ 0.66%</div></div>
-            <div class="bg-slate-50 border p-2 rounded-lg"><div>S&P 500</div><div class="font-bold">6,592</div><div class="text-xs text-red-600 font-bold">▲ 0.54%</div></div>
-            <div class="bg-slate-50 border p-2 rounded-lg"><div>나스닥</div><div class="font-bold">21,930</div><div class="text-xs text-red-600 font-bold">▲ 0.77%</div></div>
-            <div class="bg-slate-50 border p-2 rounded-lg"><div>10년물 국채</div><div class="font-bold">4.328%</div><div class="text-xs text-blue-600 font-bold">▼ -1.46%</div></div>
-            <div class="bg-slate-50 border p-2 rounded-lg col-span-2"><div>WTI 원유</div><div class="font-bold">$91.67</div><div class="text-xs text-blue-600 font-bold">▼ -0.74%</div></div>
-        </div>
-
         <div class="mb-6">
-            <h3 class="text-sm font-bold text-slate-700 mb-2">🤖 AI 시황 분석 (Jong's Report)</h3>
-            <details class="group bg-blue-50 border border-blue-200 rounded-xl overflow-hidden cursor-pointer" open>
-                <summary class="p-4 text-sm font-medium flex justify-between bg-blue-100/50"><span>거시경제 분석 보기</span><span>▼</span></summary>
-                <div class="p-4 border-t text-xs text-slate-600 bg-white leading-relaxed space-y-2">
-                    <p>미 증시는 10년물 국채금리 하락으로 투자 심리가 안정되며 3대 지수 일제히 상승 마감했습니다.</p>
-                    <p><strong>전략:</strong> 금리 안정세가 지속될 경우 나스닥 비중이 높은 연금계좌의 성과 개선이 기대됩니다.</p>
-                </div>
-            </details>
+            <label class="text-xs font-bold text-slate-400 mb-1 block">과거 리포트 조회</label>
+            <select id="dateSelector" class="w-full bg-slate-50 border p-2.5 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+        </div>
+        
+        <h3 class="font-bold text-slate-700 mb-3 border-b pb-2 text-xs uppercase tracking-wider">📊 실시간 주요 지표</h3>
+        <div class="grid grid-cols-2 gap-2 mb-8 text-xs">
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>다우</div><div id="m-dow" class="font-bold text-blue-600 text-sm">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>나스닥</div><div id="m-nasdaq" class="font-bold text-blue-600 text-sm">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>국채 10Y</div><div id="m-us10y" class="font-bold text-blue-600 text-sm">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>WTI 유가</div><div id="m-wti" class="font-bold text-blue-600 text-sm">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>금(Gold)</div><div id="m-gold" class="font-bold text-orange-600 text-sm">--</div></div>
+            <div class="bg-slate-50 border p-2.5 rounded-xl"><div>원달러 환율</div><div id="m-usd" class="font-bold text-green-600 text-sm">--</div></div>
         </div>
 
-        <div>
-            <h3 class="text-sm font-bold text-slate-700 mb-2">🌍 글로벌 핵심 뉴스</h3>
-            <div class="space-y-2">
-                <details class="group bg-slate-50 border rounded-lg text-xs"><summary class="p-2 cursor-pointer font-bold">버크셔 해서웨이의 AI 베팅</summary>
-                <div class="p-2 border-t text-slate-500">워런 버핏이 포트폴리오의 20.4%를 단 3개의 AI 주식에 집중하며 장기 가치를 높게 평가 중입니다.</div></details>
-                <details class="group bg-slate-50 border rounded-lg text-xs"><summary class="p-2 cursor-pointer font-bold">중동 지정학적 리스크</summary>
-                <div class="p-2 border-t text-slate-500">WTI 가격은 소폭 하락했으나 분쟁 확대 우려가 시장의 뇌관으로 작용하고 있습니다.</div></details>
-            </div>
-        </div>
+        <h3 class="text-xs font-bold text-slate-700 mb-2">🤖 AI 시장 인사이트</h3>
+        <details id="ai-box" class="group bg-blue-50 border border-blue-100 rounded-xl overflow-hidden mb-6" open>
+            <summary class="p-4 text-xs font-bold flex justify-between bg-blue-100/30">
+                <span id="ai-title">데이터 분석 대기 중...</span><span>▼</span>
+            </summary>
+            <div id="ai-macro-side" class="p-4 border-t text-[11px] text-slate-600 bg-white leading-relaxed"></div>
+        </details>
+
+        <h3 class="text-xs font-bold text-slate-700 mb-2">🌎 글로벌 핵심 뉴스</h3>
+        <div id="news-container" class="space-y-2"></div>
     </aside>
 
-    <main class="w-3/4 h-full p-8 overflow-y-auto flex flex-col gap-6">
-        <header class="flex justify-between items-end border-b pb-4">
-            <h1 class="text-2xl font-bold text-slate-800">📈 Jong의 포트폴리오 대시보드</h1>
-            <span class="text-sm text-slate-500 font-medium">기준일: 2026-03-26</span>
+    <main class="w-3/4 h-full p-8 overflow-y-auto flex flex-col gap-8 bg-[#f8fafc]">
+        <header class="flex justify-between items-end border-b pb-5">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight">📈 Jong의 포트폴리오 대시보드</h1>
+                <p class="text-slate-400 text-xs mt-1">실시간 데이터 및 AI 기반 자산 분석 시스템</p>
+            </div>
+            <div id="base-date" class="bg-white px-4 py-2 border rounded-full text-xs font-bold text-slate-500 shadow-sm">기준일: --</div>
         </header>
 
-        <section class="bg-white border-l-4 border-blue-600 rounded-r-2xl p-5 shadow-sm space-y-2">
-            <h3 class="font-bold text-slate-800 flex items-center gap-2">🔍 시황 및 주요 종목 성과 요약</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-                국채금리 하락으로 시장이 안정된 가운데, <strong>메리츠금융지주(+3.05%)</strong>가 든든한 방어력을 보여주며 계좌 수익률을 견인했습니다. 반면 <strong>삼성전자(-4.44%)</strong>는 단기 변동성이 확대되었습니다. 전반적인 상승세 속에서도 금융주 강세가 반도체/완성차의 조정을 상쇄하며 포트폴리오 내 밸런스가 유지되고 있습니다.
-            </p>
+        <section class="bg-white border-l-[6px] border-blue-600 rounded-r-2xl p-6 shadow-sm">
+            <h3 class="font-bold text-sm mb-2 text-blue-600 flex items-center gap-2">🔍 시황 기반 포트폴리오 영향 및 성과 분석</h3>
+            <p id="macro-impact" class="text-sm text-slate-600 leading-relaxed font-medium italic">리포트를 선택하여 상세 분석 내용을 확인하세요.</p>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm border p-6">
-            <h2 class="text-lg font-bold mb-4">💰 전체 자산 현황</h2>
-            <div class="flex flex-col xl:flex-row gap-6">
-                <div class="xl:w-2/3 table-container border rounded-xl">
-                    <table class="w-full text-sm text-left"><thead class="bg-slate-50 border-b"><tr><th class="px-4 py-3">계좌</th><th class="px-4 py-3">종목</th><th class="px-4 py-3 text-right">수익률</th><th class="px-4 py-3 text-right">평가금액</th></tr></thead>
-                    <tbody id="totalPortfolioTableBody" class="divide-y"></tbody></table>
+        <section class="bg-white rounded-3xl shadow-sm border p-7">
+            <h2 class="text-xl font-bold mb-5 flex items-center gap-2">💰 전체 자산 현황 <span class="text-xs font-normal text-slate-400">(종목별 상세 수익률 및 비중)</span></h2>
+            <div class="flex flex-col xl:flex-row gap-8">
+                <div class="xl:w-2/3 table-container border rounded-2xl overflow-hidden">
+                    <table class="w-full text-[11px] text-left">
+                        <thead class="bg-slate-50 border-b">
+                            <tr class="text-slate-500 uppercase">
+                                <th class="px-3 py-4">계좌</th><th class="px-3 py-4">종목</th>
+                                <th class="px-3 py-4 text-right">수량</th><th class="px-3 py-4 text-right">매입가</th>
+                                <th class="px-3 py-4 text-right">현재가</th><th class="px-3 py-4 text-right">수익률</th>
+                                <th class="px-3 py-4 text-right">평가금액</th>
+                            </tr>
+                        </thead>
+                        <tbody id="totalTableBody" class="divide-y"></tbody>
+                    </table>
                 </div>
-                <div class="xl:w-1/3 bg-slate-50 rounded-xl p-4 border flex flex-col items-center">
-                    <div id="totalTreemapChart" class="w-full" style="min-height: 380px;"></div>
-                    <p class="text-xs text-slate-500 mt-2 font-bold text-red-600">빨강: 상승 / 파랑: 하락</p>
+                <div class="xl:w-1/3 bg-slate-50 rounded-2xl p-5 border flex items-center justify-center">
+                    <div id="totalTreemap" class="w-full h-[380px]"></div>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm border p-6">
-            <div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold">🔄 계좌별 리밸런싱 가이드</h2><select id="accountSelector" class="bg-slate-100 border p-2 rounded-lg font-bold"></select></div>
-            <div class="flex flex-col xl:flex-row gap-6">
-                <div class="xl:w-1/2 border rounded-xl table-container"><table class="w-full text-sm text-left"><thead class="bg-slate-50 border-b"><tr><th class="px-4 py-3">종목명</th><th class="px-4 py-3 text-center">현재비중</th><th class="px-4 py-3 text-center">목표</th><th class="px-4 py-3 text-center">가이드</th></tr></thead>
-                <tbody id="accountPortfolioTableBody" class="divide-y"></tbody></table></div>
-                <div class="xl:w-1/2 bg-slate-50 rounded-xl p-4 border"><div id="accountTreemapChart" class="w-full" style="min-height: 350px;"></div></div>
+        <section class="bg-white rounded-3xl shadow-sm border p-7">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">🔄 계좌별 리밸런싱 가이드</h2>
+                <select id="accSelector" class="bg-slate-50 border-2 border-slate-100 p-2.5 rounded-xl font-bold text-sm focus:border-blue-500 outline-none"></select>
+            </div>
+            <div class="flex flex-col xl:flex-row gap-8">
+                <div class="xl:w-2/3 table-container border rounded-2xl overflow-hidden">
+                    <table class="w-full text-[11px] text-left">
+                        <thead class="bg-slate-50 border-b">
+                            <tr class="text-slate-500 uppercase">
+                                <th class="px-3 py-4">종목명</th><th class="px-3 py-4 text-right">수량</th>
+                                <th class="px-3 py-4 text-right">매입가</th><th class="px-3 py-4 text-right">현재가</th>
+                                <th class="px-3 py-4 text-center">비중 / 목표</th><th class="px-3 py-4 text-center">리밸런싱 가이드</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accTableBody" class="divide-y"></tbody>
+                    </table>
+                </div>
+                <div class="xl:w-1/3 bg-slate-50 rounded-2xl p-5 border flex items-center justify-center">
+                    <div id="accTreemap" class="w-full h-[380px]"></div>
+                </div>
             </div>
         </section>
 
-        <section class="bg-slate-800 text-white rounded-2xl p-6 shadow-md">
-            <h3 class="font-bold mb-3 flex items-center gap-2">🎯 계좌별 포트폴리오 대응 전략</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-300">
-                <div class="border-l-2 border-red-500 pl-3"><strong class="text-white">[종합/일반계좌]</strong> 메리츠금융지주 강세 지속 시 비중 축소 후 현대차2우B나 삼성전자 하락 구간 분할 매수로 밸런스 조정 권고.</div>
-                <div class="border-l-2 border-blue-500 pl-3"><strong class="text-white">[연금/IRP]</strong> 나스닥 안정화에 따라 ACE 미국빅테크TOP7 Plus 홀딩 유지. 삼성전자 하락폭 확대 시 장기 목표 비중(45%) 도달 여부 점검 필요.</div>
-            </div>
+        <section class="bg-slate-900 text-white rounded-3xl p-8 shadow-xl">
+            <h3 class="font-bold text-lg mb-4 text-blue-400 flex items-center gap-2">🎯 계좌별 포트폴리오 대응 전략</h3>
+            <p id="strategy-text" class="text-sm text-slate-300 leading-relaxed font-light"></p>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm border p-6 mb-8">
-            <h2 class="text-lg font-bold mb-4">📊 포트폴리오 누적 성과</h2>
-            <div class="grid grid-cols-2 gap-6">
-                <div class="border rounded-xl p-4 bg-slate-50/50"><h4 class="text-sm font-bold mb-2">주간 성과 (+1.24%)</h4><div class="h-32"><canvas id="weeklyChart"></canvas></div></div>
-                <div class="border rounded-xl p-4 bg-slate-50/50"><h4 class="text-sm font-bold mb-2">월간 성과 (+4.85%)</h4><div class="h-32"><canvas id="monthlyChart"></canvas></div></div>
+        <section class="bg-white rounded-3xl shadow-sm border p-7 mb-10">
+            <h2 class="text-xl font-bold mb-6">📊 포트폴리오 누적 성과</h2>
+            <div class="grid grid-cols-2 gap-8 h-56">
+                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center">
+                    <span class="text-xs font-bold text-slate-400 mb-2">주간 성과 변동</span>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border flex flex-col items-center">
+                    <span class="text-xs font-bold text-slate-400 mb-2">월간 자산 추이</span>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
             </div>
         </section>
     </main>
 
     <script>
         let globalData = [];
-        let totalChart = null;
-        let accChart = null;
-
-        const fmt = (n) => n.toLocaleString('ko-KR');
+        let totalChart, accChart;
+        const fmt = (n) => Number(n).toLocaleString();
 
         async function init() {
-            try {
-                const res = await fetch('/api/portfolio');
-                globalData = await res.json();
-                if (globalData.length > 0) {
-                    renderTotalView(globalData);
-                    const sel = document.getElementById('accountSelector');
-                    const accs = [...new Set(globalData.map(d => d.account))];
-                    sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
-                    sel.addEventListener('change', (e) => renderAccView(e.target.value));
-                    renderAccView(accs[0]);
-                    renderPerformance();
-                }
-            } catch (e) { console.error("Load Error:", e); }
+            const res = await fetch('/api/portfolio');
+            const data = await res.json();
+            
+            if(data.market) {
+                document.getElementById('m-dow').innerText = data.market.dow;
+                document.getElementById('m-nasdaq').innerText = data.market.nasdaq;
+                document.getElementById('m-us10y').innerText = data.market.us10y;
+                document.getElementById('m-wti').innerText = data.market.wti;
+                document.getElementById('m-gold').innerText = data.market.gold;
+                document.getElementById('m-usd').innerText = data.market.usd;
+                document.getElementById('base-date').innerText = "기준일: " + data.market.date;
+            }
+
+            globalData = data.portfolio;
+            renderTotal(globalData);
+            
+            const accs = [...new Set(globalData.map(d => d.account))];
+            const sel = document.getElementById('accSelector');
+            sel.innerHTML = accs.map(a => `<option value="${a}">${a}</option>`).join('');
+            sel.onchange = (e) => renderAcc(e.target.value);
+            renderAcc(accs[0]);
+
+            const dRes = await fetch('/api/get_report_dates');
+            const dates = await dRes.json();
+            const dSel = document.getElementById('dateSelector');
+            dSel.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
+            dSel.onchange = (e) => loadReport(e.target.value);
+            if(dates.length > 0) loadReport(dates[0]);
+
+            renderCharts();
         }
 
-        function renderTotalView(data) {
-            const body = document.getElementById('totalPortfolioTableBody');
-            body.innerHTML = data.map(item => `
-                <tr class="hover:bg-slate-50"><td class="px-4 py-3 text-xs text-slate-500">${item.account}</td><td class="px-4 py-3 font-bold">${item.asset}</td><td class="px-4 py-3 text-right font-bold ${item.return >= 0 ? 'text-red-600' : 'text-blue-600'}">${item.return}%</td><td class="px-4 py-3 text-right">${fmt(item.value)}원</td></tr>
+        function renderTotal(data) {
+            const body = document.getElementById('totalTableBody');
+            body.innerHTML = data.map(d => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-3 py-4 text-slate-400">${d.account}</td>
+                    <td class="px-3 py-4 font-bold text-slate-700">${d.asset}</td>
+                    <td class="px-3 py-4 text-right">${fmt(d.quantity)}</td>
+                    <td class="px-3 py-4 text-right text-slate-500">${fmt(d.buyPrice)}</td>
+                    <td class="px-3 py-4 text-right font-medium">${fmt(d.currentPrice)}</td>
+                    <td class="px-3 py-4 text-right font-black ${d.return >= 0 ? 'text-red-500' : 'text-blue-500'}">${d.return}%</td>
+                    <td class="px-3 py-4 text-right font-bold">${fmt(d.value)}</td>
+                </tr>
             `).join('');
-
-            const series = data.filter(d => d.value > 0).map(d => ({ x: d.asset, y: d.value, val: d.return }));
+            
             if(totalChart) totalChart.destroy();
-            totalChart = new ApexCharts(document.querySelector("#totalTreemapChart"), getMapOpt(series, "전체 비중 및 수익률 히트맵"));
+            totalChart = new ApexCharts(document.querySelector("#totalTreemap"), getTreemapOpt(data, "전체 자산 비중"));
             totalChart.render();
         }
 
-        function renderAccView(accName) {
+        function renderAcc(accName) {
             const filtered = globalData.filter(d => d.account === accName);
-            const body = document.getElementById('accountPortfolioTableBody');
-            body.innerHTML = filtered.map(item => `
-                <tr class="hover:bg-slate-50"><td class="px-4 py-4 font-bold">${item.asset}</td><td class="px-4 py-4 text-center">${item.curWeight}%</td><td class="px-4 py-4 text-center font-bold">${item.targetWeight}%</td><td class="px-4 py-4 text-center"><span class="px-2 py-1 rounded-full text-xs font-bold ${item.guideType === 'buy' ? 'bg-red-100 text-red-600' : (item.guideType === 'sell' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500')}">${item.guide}</span></td></tr>
-            `).join('');
+            const totalVal = filtered.reduce((s, d) => s + d.value, 0);
+            const body = document.getElementById('accTableBody');
+            
+            body.innerHTML = filtered.map(d => {
+                const weight = ((d.value / totalVal) * 100).toFixed(1);
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-5 font-bold text-slate-700">${d.asset}</td>
+                        <td class="px-3 py-5 text-right">${fmt(d.quantity)}</td>
+                        <td class="px-3 py-5 text-right text-slate-500">${fmt(d.buyPrice)}</td>
+                        <td class="px-3 py-5 text-right">${fmt(d.currentPrice)}</td>
+                        <td class="px-3 py-5 text-center font-bold text-blue-600">${weight}% <span class="text-slate-300 font-normal">/ -</span></td>
+                        <td class="px-3 py-5 text-center"><span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">비중 유지</span></td>
+                    </tr>
+                `;
+            }).join('');
 
-            const series = filtered.filter(d => d.value > 0).map(d => ({ x: d.asset, y: d.value, val: d.return }));
             if(accChart) accChart.destroy();
-            accChart = new ApexCharts(document.querySelector("#accountTreemapChart"), getMapOpt(series, accName + " 비중 현황"));
+            accChart = new ApexCharts(document.querySelector("#accTreemap"), getTreemapOpt(filtered, accName + " 비중"));
             accChart.render();
         }
 
-        function getMapOpt(data, title) {
+        async function loadReport(date) {
+            const res = await fetch('/api/get_report/' + date);
+            const r = await res.json();
+            if(r.title) {
+                document.getElementById('ai-title').innerText = r.title;
+                document.getElementById('ai-macro-side').innerText = r.macro;
+                document.getElementById('macro-impact').innerText = r.macro;
+                document.getElementById('strategy-text').innerText = r.strategy;
+                document.getElementById('news-container').innerHTML = r.news.map(n => `
+                    <details class="bg-slate-50 border border-slate-100 rounded-xl text-[11px] hover:border-blue-200 transition-all">
+                        <summary class="p-3 font-bold flex justify-between items-center">${n.t} <span class="text-slate-300">▼</span></summary>
+                        <div class="p-3 border-t text-slate-500 bg-white leading-relaxed">${n.c}</div>
+                    </details>
+                `).join('');
+            }
+        }
+
+        function getTreemapOpt(data, title) {
             return {
-                series: [{ data: data }],
+                series: [{ data: data.map(d => ({ x: d.asset, y: d.value, val: d.return })) }],
                 chart: { type: 'treemap', height: 380, toolbar: { show: false } },
-                title: { text: title, align: 'center', style: { fontSize: '14px', fontWeight: 'bold' } },
                 plotOptions: {
                     treemap: {
-                        enableShades: true,
                         colorScale: {
                             ranges: [
-                                { from: -100, to: -10, color: '#0047AB' },
-                                { from: -10, to: -2, color: '#4169E1' },
-                                { from: -2, to: 0, color: '#A3C1FF' },
-                                { from: 0.01, to: 2, color: '#FFBABA' },
-                                { from: 2, to: 10, color: '#FF4500' },
-                                { from: 10, to: 1000, color: '#D21404' }
+                                { from: -100, to: -2, color: '#3b82f6' },
+                                { from: -2, to: 0.01, color: '#94a3b8' },
+                                { from: 0.01, to: 2, color: '#f87171' },
+                                { from: 2, to: 100, color: '#ef4444' }
                             ]
                         }
                     }
                 },
-                dataLabels: { enabled: true, formatter: (text, op) => [text, op.val + '%'] },
-                tooltip: { y: { formatter: (v) => fmt(v) + '원' } }
+                dataLabels: { formatter: (t, o) => [t, o.val + '%'] }
             };
         }
 
-        function renderPerformance() {
-            new Chart(document.getElementById('weeklyChart'), { type: 'bar', data: { labels: ['3주전', '2주전', '지난주', '이번주'], datasets: [{ data: [0.5, -0.2, 1.0, 1.24], backgroundColor: ['#cbd5e1', '#cbd5e1', '#cbd5e1', '#ef4444'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ data: [2.0, 3.8, 4.85], borderColor: '#ef4444', fill: true, tension: 0.4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        document.getElementById('reportBtn').onclick = async () => {
+            const btn = document.getElementById('reportBtn');
+            btn.innerText = "🤖 분석 및 저장 중..."; btn.disabled = true;
+            await fetch('/api/generate_daily_report', { method: 'POST' });
+            location.reload();
         }
 
-        // 날짜별 리포트 연동 함수
-        async function fetchDailyReport(date) {
-            const res = await fetch(`/api/get_report/${date}`);
-            const report = await res.json();
-            if(report.date) {
-                // 사이드바 AI 분석 텍스트 교체
-                document.querySelector("details summary span").innerText = report.title;
-                document.querySelector("details div").innerHTML = `
-                    <p class="mb-2"><strong class="text-blue-600">[거시경제 시황]</strong> ${report.macro}</p>
-                    <p><strong class="text-blue-600">[대응 방안]</strong> ${report.strategy}</p>
-                `;
-            }
+        function renderCharts() {
+            new Chart(document.getElementById('weeklyChart'), { type: 'bar', data: { labels: ['3주전', '2주전', '1주전', '현재'], datasets: [{ label: '수익률(%)', data: [1.2, -0.5, 2.1, 1.8], backgroundColor: '#3b82f6', borderRadius: 8 }] }, options: { maintainAspectRatio: false } });
+            new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: ['1월', '2월', '3월'], datasets: [{ label: '자산총액', data: [450, 480, 520], borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: 'rgba(239, 68, 68, 0.1)' }] }, options: { maintainAspectRatio: false } });
         }
 
-        window.onload = async () => {
-            await init(); // 포트폴리오 데이터 로드
-            renderPerformanceCharts();
-
-            // Supabase에서 날짜 목록 가져오기
-            const res = await fetch('/api/get_report_dates');
-            const dates = await res.json();
-            const dateSel = document.querySelector("aside select");
-            
-            if(dates.length > 0) {
-                dateSel.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-                dateSel.addEventListener('change', (e) => fetchDailyReport(e.target.value));
-                fetchDailyReport(dates[0]); // 첫날 리포트 로드
-            }
-        };
-        // --- [기존 <script> 태그 안쪽 하단에 추가] ---
-
-        // 🚀 분석 리포트 발송 버튼 이벤트 연결
-        const reportBtn = document.querySelector("button"); // 사이드바의 파란색 버튼
-
-        if (reportBtn) {
-            reportBtn.addEventListener("click", async () => {
-                const originalText = reportBtn.innerHTML;
-                
-                // 버튼 비활성화 및 로딩 표시
-                reportBtn.disabled = true;
-                reportBtn.innerHTML = "<span>🤖 AI 분석 중...</span>";
-                
-                try {
-                    const res = await fetch('/api/generate_daily_report', { method: 'POST' });
-                    const result = await res.json();
-                    
-                    if (result.status === "success") {
-                        alert(`${result.date}자 AI 리포트가 생성되어 Supabase에 저장되었습니다!`);
-                        location.reload(); // 새로고침하여 리스트 갱신
-                    } else {
-                        alert("분석 실패: " + result.message);
-                    }
-                } catch (err) {
-                    alert("서버 통신 중 오류가 발생했습니다.");
-                } finally {
-                    reportBtn.disabled = false;
-                    reportBtn.innerHTML = originalText;
-                }
-            });
-        }
+        window.onload = init;
     </script>
 </body>
 </html>
