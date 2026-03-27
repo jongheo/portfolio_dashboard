@@ -72,7 +72,7 @@ def get_sheet_data():
                 "nasdaq": latest_market.get("나스닥", "-"),
                 "russell": latest_market.get("Russell2000", "-"),
                 "us10y": latest_market.get("10년물 금리", "-"),
-                "wti": latest_m = latest_market.get("WTI 유가", "-"),
+                "wti": latest_market.get("WTI 유가", "-"),
                 "gold": latest_market.get("금", "-"),
                 "usd": latest_market.get("원달러환율", "-")
             }
