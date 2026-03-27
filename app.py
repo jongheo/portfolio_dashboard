@@ -13,7 +13,8 @@ app = Flask(__name__)
 def load_secrets():
     render_secret_path = "/etc/secrets/secrets.toml"
     local_secret_path = os.path.join(".streamlit", "secrets.toml")
-    if os.path.exists(render_secret_path): return toml.load(render_secret_path)
+    if os.path.exists(render_secret_path):
+        return toml.load(render_secret_path)
     return toml.load(local_secret_path)
 
 def get_supabase():
@@ -28,51 +29,71 @@ def get_sheet_data():
         client = gspread.authorize(credentials)
         
         spreadsheet = client.open("자산관리시트_250301")
+        
+        # 1. 잔고현황 데이터
         balance_sheet = spreadsheet.worksheet("잔고현황")
         records = balance_sheet.get_all_records()
         
+        # 2. 시황기록 데이터 (최신 데이터 2행 읽기)
         market_sheet = spreadsheet.worksheet("시황기록")
         market_records = market_sheet.get_all_records()
-        latest_m = market_records[-1] if market_records else {}
+        # 가장 최근에 기록된 행(마지막 행)을 가져옵니다.
+        latest_market = market_records[-1] if market_records else {}
 
         portfolio = []
         for row in records:
-            if not row.get("계좌명"): continue
-            def cn(v): return float(str(v).replace(',','').replace('%','')) if v else 0
+            acc = row.get("계좌명", "")
+            if not acc: continue
+            
+            def cn(v): return float(str(v).replace(',','').replace('%','')) if v and str(v).strip() != "" else 0
+            
             buy_p = cn(row.get("매입단가"))
             curr_p = cn(row.get("현재가"))
+            qty = cn(row.get("보유수량"))
+            val = cn(row.get("평가금액"))
+            ret = round(((curr_p / buy_p) - 1) * 100, 2) if buy_p > 0 else 0
+            
             portfolio.append({
-                "account": row.get("계좌명"),
-                "asset": row.get("종목명"),
-                "quantity": cn(row.get("보유수량")),
+                "account": acc,
+                "asset": row.get("종목명", ""),
+                "quantity": qty,
                 "buyPrice": buy_p,
                 "currentPrice": curr_p,
-                "return": round(((curr_p / buy_p) - 1) * 100, 2) if buy_p > 0 else 0,
-                "value": cn(row.get("평가금액"))
+                "return": ret,
+                "value": val
             })
 
         return {
             "portfolio": portfolio,
             "market": {
-                "date": latest_m.get("날짜", "-"),
-                "dow": latest_m.get("다우지수", "-"),
-                "snp": latest_m.get("S&P500", "-"),
-                "nasdaq": latest_m.get("나스닥", "-"),
-                "russell": latest_m.get("Russell2000", "-"), # 추가
-                "us10y": latest_m.get("10년물 금리", "-"),
-                "wti": latest_m.get("WTI 유가", "-"),
-                "gold": latest_m.get("금", "-"),
-                "usd": latest_m.get("원달러환율", "-")
+                "date": str(latest_market.get("날짜", "-")),
+                "dow": latest_market.get("다우지수", "-"),
+                "snp": latest_market.get("S&P500", "-"),
+                "nasdaq": latest_market.get("나스닥", "-"),
+                "russell": latest_market.get("Russell2000", "-"),
+                "us10y": latest_market.get("10년물 금리", "-"),
+                "wti": latest_m = latest_market.get("WTI 유가", "-"),
+                "gold": latest_market.get("금", "-"),
+                "usd": latest_market.get("원달러환율", "-")
             }
         }
     except Exception as e:
+        print(f"Sheet Error: {e}")
         return None
 
 def get_gemini_analysis(data):
     secrets = load_secrets()
     genai.configure(api_key=secrets["gemini"]["api_key"])
-    model = genai.GenerativeModel('models/gemini-pro-latest')
-    prompt = f"""포트폴리오 분석 리포트를 JSON으로 작성하세요. 데이터: {json.dumps(data, ensure_ascii=False)}"""
+    # 쿼터와 호환성이 가장 검증된 모델명 사용
+    model = genai.GenerativeModel('gemini-pro') 
+    
+    prompt = f"""
+    당신은 자산관리사입니다. 아래 데이터를 분석하여 JSON으로만 답하세요.
+    시황: {json.dumps(data['market'], ensure_ascii=False)}
+    포트폴리오: {json.dumps(data['portfolio'], ensure_ascii=False)}
+    
+    형식: {{"title": "...", "macro": "...", "strategy": "...", "news": [{{"t": "...", "c": "..."}}]}}
+    """
     response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
     return json.loads(response.text.strip())
 
@@ -84,11 +105,23 @@ def get_portfolio(): return jsonify(get_sheet_data())
 
 @app.route('/api/generate_daily_report', methods=['POST'])
 def generate_daily_report():
-    data = get_sheet_data()
-    analysis = get_gemini_analysis(data)
-    today = datetime.now().strftime("%Y-%m-%d")
-    get_supabase().table("daily_reports").upsert({"date": today, **analysis}).execute()
-    return jsonify({"status": "success", "date": today})
+    try:
+        data = get_sheet_data()
+        analysis = get_gemini_analysis(data)
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Supabase에 리포트와 당시 지표를 함께 저장
+        report_payload = {
+            "date": today, "title": analysis['title'], "macro": analysis['macro'],
+            "strategy": analysis['strategy'], "news": analysis['news'],
+            "dow": data['market']['dow'], "snp": data['market']['snp'], 
+            "nasdaq": data['market']['nasdaq'], "russell": data['market']['russell'],
+            "gold": data['market']['gold'], "usd": data['market']['usd']
+        }
+        get_supabase().table("daily_reports").upsert(report_payload).execute()
+        return jsonify({"status": "success", "date": today})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/get_report_dates')
 def get_report_dates():
